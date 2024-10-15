@@ -161,3 +161,6 @@ cython_debug/
 
 # virtualenv ignore
 .venv 
+
+*.pt
+dataset/
