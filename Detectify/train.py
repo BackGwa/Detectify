@@ -36,7 +36,6 @@ class Train:
                     while True:
                         select = input("모델을 다운로드하시겠습니까? (Y/n) : ").lower()
                         if select == 'n':
-                            self.log.warn("모델 다운로드를 취소하였습니다.")
                             raise Exception("모델 다운로드를 취소하여, 인스턴스 생성에 실패하였습니다.")
                         elif select == 'y' or select == '':
                             link = f"https://github.com/ultralytics/assets/releases/download/v8.3.0/{model}"
@@ -117,11 +116,11 @@ class Train:
         except Exception as ex:
             self.log.error("데이터셋 유효성 검사를 실패하였습니다.", ex)
 
-        self.log.alert(f"GPU 가속 여부를 확인하고 있습니다.")
         try:
+            self.log.alert(f"GPU 가속 여부를 확인하고 있습니다.")
             if torch.cuda.is_available():
-                self.log.success("GPU 가속을 사용할 수 있습니다. GPU 가속으로 파인튜닝을 시작합니다.")
                 device = list(range(torch.cuda.device_count()))
+                self.log.success("GPU 가속을 사용할 수 있습니다. GPU 가속으로 파인튜닝을 시작합니다.")
             else:
                 device = "cpu"
                 self.log.warn("GPU 가속을 사용할 수 없습니다. CPU로 파인튜닝을 시작합니다.")
@@ -129,7 +128,7 @@ class Train:
             self.log.error("디바이스를 확인하던 중 문제가 발생했습니다.", ex)
 
         try:
-            self.log.alert(f"모델 학습을 시작합니다.")
+            self.log.alert(f"파인튜닝을 시작합니다.")
             self.model.train(
                 data=dataset,
                 epochs=epochs,
@@ -140,6 +139,6 @@ class Train:
                 device=device,
                 workers=0
             )
-            self.log.alert(f"모델 학습이 완료되었습니다!")
+            self.log.alert(f"파인튜닝이 완료되었습니다!")
         except Exception as ex:
             self.log.error("파인튜닝을 진행하던 중, 문제가 발생했습니다.", ex)
