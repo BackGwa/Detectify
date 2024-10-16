@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="detectify-python",
-    version="1.0.3",
+    version="1.0.4",
     author="KANG CHANYOUNG",
     author_email="backgwa@icloud.com",
     description="Detectify - YOLOv11 based object detection framework",
