@@ -53,7 +53,7 @@ Detectify는 YOLO를 쉽고 빠르게 사용하기 위한, 라이브러리입니
     #### 값 가져오기
     추론에 관련한 값 (결괏값, 상태 등)을 가져올 수 있습니다.<br>
     ```py
-    predict.start           # 추론 스레드가 시작되었는지 확인합니다.
+    predict.status          # 추론 스레드가 시작되었는지 확인합니다.
                             # 자료형은 bool 입니다.
 
     predict.is_working      # 추론 중인지 확인합니다.
