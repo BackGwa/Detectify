@@ -2,6 +2,7 @@ import os
 from ultralytics import YOLO
 from .logger import Logger
 
+
 class Predict:
     def __init__(self, model: str):
         self.log = Logger()
