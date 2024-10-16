@@ -20,6 +20,7 @@ Detectify는 YOLO를 쉽고 빠르게 사용하기 위한, 라이브러리입니
 ## 예제
 
 - ### 모델 파인튜닝 (학습)
+    #### 예제
     YOLOv11 모델을 커스텀 데이터셋으로 파인튜닝하는 과정입니다.<br>
     - **이 과정에선 GPU (CUDA)가 권장됩니다!**<br>
     *GPU가 없는 경우 CPU를 통해, 매우 느린 속도로 학습이 진행됩니다. (권장하지 않음!)*<br>
@@ -35,7 +36,8 @@ Detectify는 YOLO를 쉽고 빠르게 사용하기 위한, 라이브러리입니
     train.start(dataset="dataset/data.yaml")
     ```
 
-- ### 모델 추론 - *아직 사용할 수 없습니다*
+- ### 모델 추론
+    #### 예제
     학습된 모델을 사용하여, 추론하는 과정입니다.<br>
     - **이 과정에선 GPU (CUDA)가 권장됩니다!**<br>
     *GPU가 없는 경우 CPU를 통해, 느린 속도로 추론이 진행됩니다.*
@@ -43,6 +45,59 @@ Detectify는 YOLO를 쉽고 빠르게 사용하기 위한, 라이브러리입니
     from Detectify import Predict
 
     predict = Predict(model="model.pt")
+
+    predict.start(source=0)
+    ```
+
+    #### 값 가져오기
+    추론에 관련한 값 (결괏값, 상태 등)을 가져올 수 있습니다.<br>
+    ```py
+    predict.is_working      # 현재 추론이 진행 상태인지 확인합니다.
+                            # 자료형은 bool 입니다.
+
+    predict.result          # 추론 결괏값입니다.
+                            # 자료형은 List[Results]이거나, None 입니다.
+
+    predict.most            # 현재 최상위 클래스의 이름입니다.
+                            # 자료형은 str 입니다.
+    ```
+
+    #### 추론 파라미터
+    클래스의 파라미터를 조정하여, 추론 파라미터를 할 수 있습니다.<br>
+    *추론 설정 과정은 되도록 추론 이전에 실행하는 것이 좋습니다.*
+    ```py
+    predict.handler = None  # 추론한 최상위 클래스가 변경되었을 때
+                            # 핸들러가 실행할 함수입니다. (하단 예제 참고)
+    
+    predict.conf = 0.25     # 추론 시 감지 임계값입니다.
+                            # 추론한 대상이 해당 임계값보다 미만이라면, 무시됩니다.
+    
+    predict.iou = 0.7       # 대상 중복 감지 임계값입니다.
+                            # 값이 낮을수록 겹치는 영역이 적어집니다.
+
+    predict.max_objs = 300  # 최대로 감지할 대상의 수 입니다.
+                            # 하나의 물체만 감지해야한다면, 1로 설정하는 것이 좋습니다.
+    ```
+
+- ### 모델 추론 (핸들러 예제)
+    #### 예제
+    추론 과정에서 이벤트 핸들러를 추가하는 예제입니다.<br>
+    이벤트 핸들러는 최상위 클래스가 변경될 때 호출됩니다.<br>
+    - **이 과정에선 GPU (CUDA)가 권장됩니다!**<br>
+    *GPU가 없는 경우 CPU를 통해, 느린 속도로 추론이 진행됩니다.*
+    - **main 함수를 사용하는 것이 권장됩니다!**<br>
+    *하단 예제는 main 함수 없이 작성되었지만, 이는 권장하지 않는 방법입니다.*
+    ```py
+    from Detectify import Predict
+
+    predict = Predict("model.pt")
+
+    def callback():
+        # 이 곳에 최상위 클래스가 변경되었을 때,
+        # 작동할 코드를 삽입합니다...
+
+    predict.handler = callback
+    predict.start(source=0)
     ```
 <br>
 
