@@ -1,8 +1,7 @@
 import os, requests, yaml
 from pathlib import Path
-import torch
 from ultralytics import YOLO
-from .util import ask
+from .util import ask, get_device
 from .logger import Logger
 
 
@@ -104,16 +103,7 @@ class Train:
         except Exception as ex:
             self.log.error("데이터셋 유효성 검사를 실패하였습니다.", ex)
 
-        try:
-            self.log.alert(f"GPU 가속 여부를 확인하고 있습니다.")
-            if torch.cuda.is_available():
-                device = list(range(torch.cuda.device_count()))
-                self.log.success("GPU 가속을 사용할 수 있습니다. GPU 가속으로 파인튜닝을 시작합니다.")
-            else:
-                device = "cpu"
-                self.log.warn("GPU 가속을 사용할 수 없습니다. CPU로 파인튜닝을 시작합니다.")
-        except Exception as ex:
-            self.log.error("디바이스를 확인하던 중 문제가 발생했습니다.", ex)
+        device = get_device()
 
         try:
             self.log.alert(f"파인튜닝을 시작합니다.")
