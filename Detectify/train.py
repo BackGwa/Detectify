@@ -2,6 +2,7 @@ import os, requests, yaml
 from pathlib import Path
 import torch
 from ultralytics import YOLO
+from .util import ask
 from .logger import Logger
 
 
@@ -33,23 +34,18 @@ class Train:
                     break
                 else:
                     self.log.warn(f"현재 경로에 '{model}'이 존재하지 않습니다.")
-                    while True:
-                        select = input("모델을 다운로드하시겠습니까? (Y/n) : ").lower()
-                        if select == 'n':
-                            raise Exception("모델 다운로드를 취소하여, 인스턴스 생성에 실패하였습니다.")
-                        elif select == 'y' or select == '':
-                            link = f"https://github.com/ultralytics/assets/releases/download/v8.3.0/{model}"
-                            try:
-                                file = requests.get(link)
-                                if file.status_code == 404:
-                                    raise Exception(f"'{model}'은 유효하지 않은 모델 이름입니다.")
-                                open(model, 'wb').write(file.content)
-                                self.log.success(f"'{model}' 다운로드를 성공했습니다.")
-                            except Exception as ex:
-                                self.log.error(f"'{model}' 다운로드를 실패하였습니다.", ex)
-                            break
-                        else:
-                            self.log.warn("입력 값은 Y/n 이어야합니다.")
+                    if ask("모델을 다운로드하시겠습니까?"):
+                        link = f"https://github.com/ultralytics/assets/releases/download/v8.3.0/{model}"
+                        try:
+                            file = requests.get(link)
+                            if file.status_code == 404:
+                                raise Exception(f"'{model}'은 유효하지 않은 모델 이름입니다.")
+                            open(model, 'wb').write(file.content)
+                            self.log.success(f"'{model}' 다운로드를 성공했습니다.")
+                        except Exception as ex:
+                            self.log.error(f"'{model}' 다운로드를 실패하였습니다.", ex)
+                    else:
+                        raise Exception("모델 다운로드를 취소하여, 인스턴스 생성에 실패하였습니다.")
         except Exception as ex:
             self.log.error(f"'{model}'를 불러오던 중 문제가 발생했습니다.", ex)
 
@@ -92,27 +88,19 @@ class Train:
                 config = yaml.full_load(file)
 
             for key, path in (("train", "train"), ("val", "valid"), ("test", "test")):
-                while True:
-                    if not os.path.exists(config[key]):
-                        self.log.warn(f"{dataset} 내의 {key}의 경로를 찾을 수 없습니다.")
-                        select = input("자동 수정을 진행하시겠습니까? (Y/n) : ").lower()
+                if not os.path.exists(config[key]):
+                    self.log.warn(f"{dataset} 내의 {key}의 경로를 찾을 수 없습니다.")
+                    if ask("자동 수정을 진행하시겠습니까?"):
+                        dir = Path(dataset).parent.absolute()
+                        fix_path = os.path.join(dir, path, "images")
+                        config[key] = fix_path
 
-                        if select == 'n':
-                            raise Exception("데이터 자동수정을 진행하지 않아, 중단되었습니다.")
-                        elif select == 'y' or select == '':
-                            dir = Path(dataset).parent.absolute()
-                            fix_path = os.path.join(dir, path, "images")
-                            config[key] = fix_path
-
-                            with open(dataset, 'w') as file:
-                                yaml.dump(config, file)
-                            
-                            break
-                        else:
-                            self.log.warn("입력 값은 Y/n 이어야합니다.")
+                        with open(dataset, 'w') as file:
+                            yaml.dump(config, file)
                     else:
-                        self.log.success(f"{dataset} 내의 {key} 데이터셋 유효성 검사를 통과했습니다.")
-                        break
+                        raise Exception("데이터 자동수정을 진행하지 않아, 중단되었습니다.")
+                else:
+                    self.log.success(f"{dataset} 내의 {key} 데이터셋 유효성 검사를 통과했습니다.")
         except Exception as ex:
             self.log.error("데이터셋 유효성 검사를 실패하였습니다.", ex)
 
