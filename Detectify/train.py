@@ -39,7 +39,7 @@ class Train:
                         try:
                             file = requests.get(link)
                             if file.status_code == 404:
-                                raise Exception(f"'{model}'은 유효하지 않은 모델 이름입니다.")
+                                raise ValueError(f"'{model}'은 유효하지 않은 모델 이름입니다.")
                             open(model, 'wb').write(file.content)
                             self.log.success(f"'{model}' 다운로드를 성공했습니다.")
                         except Exception as ex:
@@ -82,7 +82,7 @@ class Train:
             self.log.alert(f"데이터셋 유효성 검사를 시작합니다.")
             
             if not os.path.exists(dataset):
-                raise Exception("데이터셋이 유효하지 않습니다. 학습을 종료합니다.")
+                raise FileNotFoundError("데이터셋이 유효하지 않습니다. 학습을 종료합니다.")
 
             with open(dataset) as file:
                 config = yaml.full_load(file)
