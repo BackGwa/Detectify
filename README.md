@@ -46,13 +46,17 @@ Detectify는 YOLO를 쉽고 빠르게 사용하기 위한, 라이브러리입니
 
     predict = Predict(model="model.pt")
 
-    predict.start(source=0)
+    predict.start(source=0) # 추론 시작
+    predict.stop()          # 추론 중지
     ```
 
     #### 값 가져오기
     추론에 관련한 값 (결괏값, 상태 등)을 가져올 수 있습니다.<br>
     ```py
-    predict.is_working      # 현재 추론이 진행 상태인지 확인합니다.
+    predict.start           # 추론 스레드가 시작되었는지 확인합니다.
+                            # 자료형은 bool 입니다.
+
+    predict.is_working      # 추론 중인지 확인합니다.
                             # 자료형은 bool 입니다.
 
     predict.result          # 추론 결괏값입니다.
@@ -66,6 +70,9 @@ Detectify는 YOLO를 쉽고 빠르게 사용하기 위한, 라이브러리입니
     클래스의 파라미터를 조정하여, 추론 파라미터를 할 수 있습니다.<br>
     *추론 설정 과정은 되도록 추론 이전에 실행하는 것이 좋습니다.*
     ```py
+    predict.preprocessing = None    # 가져온 소스의 프레임이 추론되기 전 거칠
+                                    # 전처리 함수입니다. (하단 예제 참고)
+
     predict.handler = None  # 추론한 최상위 클래스가 변경되었을 때
                             # 핸들러가 실행할 함수입니다. (하단 예제 참고)
     
@@ -79,12 +86,26 @@ Detectify는 YOLO를 쉽고 빠르게 사용하기 위한, 라이브러리입니
                             # 하나의 물체만 감지해야한다면, 1로 설정하는 것이 좋습니다.
     ```
 
+- ### 모델 추론 (전처리 예제)
+    추론 전 이미지 전처리를 추가하는 예제입니다.<br>
+    - **main 함수를 사용하는 것이 권장됩니다!**<br>
+    *하단 예제는 main 함수 없이 작성되었지만, 이는 권장하지 않는 방법입니다.*
+    ```py
+    from Detectify import Predict
+
+    predict = Predict("model.pt")
+
+    def preprocessing(frame):
+        # 이 곳에 이미지 전처리 코드를 삽입합니다...
+
+    predict.preprocessing = preprocessing
+    predict.start(source=0)
+    ```
+
 - ### 모델 추론 (핸들러 예제)
     #### 예제
     추론 과정에서 이벤트 핸들러를 추가하는 예제입니다.<br>
     이벤트 핸들러는 최상위 클래스가 변경될 때 호출됩니다.<br>
-    - **이 과정에선 GPU (CUDA)가 권장됩니다!**<br>
-    *GPU가 없는 경우 CPU를 통해, 느린 속도로 추론이 진행됩니다.*
     - **main 함수를 사용하는 것이 권장됩니다!**<br>
     *하단 예제는 main 함수 없이 작성되었지만, 이는 권장하지 않는 방법입니다.*
     ```py

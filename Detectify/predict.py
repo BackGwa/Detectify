@@ -18,10 +18,12 @@ class Predict:
         self.device = get_device()
         self.src = None
 
+        self.start = False
         self.is_working = False
         self.result = None
         self.most = ""
 
+        self.preprocessing = None
         self.handler = None
         self.conf = 0.25
         self.iou = 0.7
@@ -51,8 +53,12 @@ class Predict:
             self.log.warn("유효하지 않은 소스입니다. 추론을 중지합니다.", ex)
             return
 
-        while src.isOpened():
+        while src.isOpened() and self.start:
             ret, frame = src.read()
+
+            if self.preprocessing != None:
+                frame = self.preprocessing(frame)
+
             current_time = time.time()
             second = current_time - prev_time
             prev_time = current_time
@@ -81,6 +87,7 @@ class Predict:
                 break
 
         self.log.alert(f"추론이 중지되었습니다.")
+        self.start = False
         self.is_working = False
         
         self.log.alert(f"소스를 해제하고 있습니다.")
@@ -109,8 +116,15 @@ class Predict:
                 *기본 값은 `False` 입니다.*
         """
         try:
+            self.start = True
             if not self.is_working:
                 T = Thread(target=self.__predict_thread__, args=(source, show, exit_trigger), daemon=daemon)
                 T.start()
         except Exception as ex:
             self.log.error("추론 스레드를 시작하는 중, 문제가 발생했습니다.", ex)
+
+    def stop(self):
+        """
+        Detectify의 추론 스레드를 중지합니다.
+        """
+        self.start = False
